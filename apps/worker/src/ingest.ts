@@ -185,8 +185,10 @@ export async function runIngestion() {
 
 // Entry point when run directly
 if (require.main === module) {
-  runIngestion().catch((e) => {
-    console.error('fatal:', e);
-    process.exit(1);
-  });
+  runIngestion()
+    .then(() => process.exit(0))
+    .catch((e) => {
+      console.error('fatal:', e);
+      process.exit(1);
+    });
 }
