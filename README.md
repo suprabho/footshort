@@ -44,3 +44,4 @@ RSS feeds → worker (every 10 min) → Gemini (summarize + tag) → Supabase
 - [ ] Phase 4: Push notifications + retention
 
 See `docs/plan.md` for detail.
+# footshort
