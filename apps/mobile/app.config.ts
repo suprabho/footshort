@@ -8,6 +8,12 @@ const config: ExpoConfig = {
   orientation: 'portrait',
   userInterfaceStyle: 'automatic',
   scheme: 'shortfoot',
+  runtimeVersion: {
+    policy: 'appVersion',
+  },
+  updates: {
+    url: 'https://u.expo.dev/718ceb3c-a4cc-4180-867f-813e1be1d476',
+  },
   android: {
     package: 'app.shortfoot',
     versionCode: 1,
