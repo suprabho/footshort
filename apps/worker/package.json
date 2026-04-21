@@ -5,6 +5,7 @@
   "scripts": {
     "seed": "tsx --env-file=.env src/seed.ts",
     "ingest": "tsx --env-file=.env src/ingest.ts",
+    "ingest:ci": "tsx src/ingest.ts",
     "backfill:images": "tsx --env-file=.env src/backfillImages.ts",
     "typecheck": "tsc --noEmit"
   },
