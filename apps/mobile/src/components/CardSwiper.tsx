@@ -15,15 +15,14 @@ export function CardSwiper({ items, onEndReached, ListFooterComponent }: Props) 
   const cardHeight = height;
   // Header pill tabs sit at insets.top + 8 with ~36px height; leave room below them.
   const topGap = insets.top + 56;
-  const bottomGap = insets.bottom + 16;
 
   return (
     <FlatList
       data={items}
       keyExtractor={(item) => item.article_id}
       renderItem={({ item }) => (
-        <View style={{ height: cardHeight, paddingTop: topGap, paddingBottom: bottomGap, paddingHorizontal: 12 }}>
-          <View className="flex-1 rounded-3xl overflow-hidden bg-surface border border-border">
+        <View style={{ height: cardHeight, paddingTop: topGap, paddingHorizontal: 12 }}>
+          <View className="flex-1 rounded-t-3xl overflow-hidden bg-surface border border-b-0 border-border">
             <FeedCard
               headline={item.headline}
               summary={item.summary}

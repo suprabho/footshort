@@ -1,6 +1,7 @@
 import { Image } from 'expo-image';
 import { Pressable, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type Props = {
   headline: string;
@@ -21,6 +22,7 @@ function relativeTime(iso: string): string {
 }
 
 export function FeedCard({ headline, summary, imageUrl, publisher, url, publishedAt }: Props) {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
 
   return (
@@ -41,7 +43,7 @@ export function FeedCard({ headline, summary, imageUrl, publisher, url, publishe
         )}
       </View>
 
-      <View className="flex-1 px-6 pt-5 pb-5">
+      <View className="flex-1 px-6 pt-5" style={{ paddingBottom: insets.bottom + 16 }}>
         <View className="flex-row items-center mb-3">
           <View className="bg-surface border border-border rounded-full px-3 py-1">
             <Text className="text-text text-xs font-medium">{publisher}</Text>
