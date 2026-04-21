@@ -4,9 +4,13 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/lib/AuthProvider';
 import { useDiscoverFeed, useFeed } from '@/lib/useFeed';
+import { useFollowedStories } from '@/lib/useFollowedStories';
 import { CardSwiper } from '@/components/CardSwiper';
+import { StoryRings } from '@/components/StoryRings';
 
 type Tab = 'discover' | 'forYou';
+
+const RINGS_HEIGHT = 104;
 
 function PillTabs({ active, onChange }: { active: Tab; onChange: (t: Tab) => void }) {
   return (
@@ -48,10 +52,14 @@ function ProfileButton() {
 }
 
 function FeedBody({ tab }: { tab: Tab }) {
-  // Both hooks always mount, but only the active one has `enabled`/data in view.
+  const insets = useSafeAreaInsets();
   const forYou = useFeed();
   const discover = useDiscoverFeed();
+  const stories = useFollowedStories();
   const active = tab === 'forYou' ? forYou : discover;
+
+  const showRings = tab === 'forYou' && (stories.data?.length ?? 0) > 0;
+  const topGap = insets.top + 56 + (showRings ? RINGS_HEIGHT : 0);
 
   if (active.isLoading) {
     return (
@@ -72,7 +80,7 @@ function FeedBody({ tab }: { tab: Tab }) {
 
   const items = active.data?.pages.flat() ?? [];
 
-  if (items.length === 0) {
+  if (items.length === 0 && !showRings) {
     return (
       <View className="flex-1 items-center justify-center px-6">
         <Text className="text-text text-lg mb-2">Nothing here yet</Text>
@@ -86,12 +94,23 @@ function FeedBody({ tab }: { tab: Tab }) {
   }
 
   return (
-    <CardSwiper
-      items={items}
-      onEndReached={() => {
-        if (active.hasNextPage && !active.isFetchingNextPage) active.fetchNextPage();
-      }}
-    />
+    <>
+      <CardSwiper
+        items={items}
+        topGap={topGap}
+        onEndReached={() => {
+          if (active.hasNextPage && !active.isFetchingNextPage) active.fetchNextPage();
+        }}
+      />
+      {showRings ? (
+        <View
+          pointerEvents="box-none"
+          style={{ position: 'absolute', left: 0, right: 0, top: insets.top + 56, height: RINGS_HEIGHT }}
+        >
+          <StoryRings groups={stories.data!} />
+        </View>
+      ) : null}
+    </>
   );
 }
 

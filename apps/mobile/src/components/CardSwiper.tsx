@@ -7,14 +7,15 @@ type Props = {
   items: FeedCardType[];
   onEndReached?: () => void;
   ListFooterComponent?: React.ReactElement;
+  topGap?: number;
 };
 
-export function CardSwiper({ items, onEndReached, ListFooterComponent }: Props) {
+export function CardSwiper({ items, onEndReached, ListFooterComponent, topGap: topGapOverride }: Props) {
   const { height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const cardHeight = height;
   // Header pill tabs sit at insets.top + 8 with ~36px height; leave room below them.
-  const topGap = insets.top + 56;
+  const topGap = topGapOverride ?? insets.top + 56;
 
   return (
     <FlatList
