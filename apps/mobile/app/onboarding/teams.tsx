@@ -53,7 +53,7 @@ export default function OnboardingTeams() {
       .eq('id', session.user.id);
     await refreshProfile();
     setBusy(false);
-    router.replace('/(tabs)');
+    router.replace('/(tabs)/feed');
   }
 
   if (isLoading) {

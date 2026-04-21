@@ -22,7 +22,7 @@ export default function LoginScreen() {
     // On success, the root redirects.
   }
 
-  if (!loading && session) return <Redirect href="/(tabs)/discover" />;
+  if (!loading && session) return <Redirect href="/(tabs)/feed" />;
 
   return (
     <View className="flex-1 bg-bg px-6 justify-center">

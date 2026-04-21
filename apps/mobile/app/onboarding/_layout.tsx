@@ -14,7 +14,7 @@ export default function OnboardingLayout() {
   }
 
   if (!session) return <Redirect href="/login" />;
-  if (profile?.onboarded_at) return <Redirect href="/(tabs)" />;
+  if (profile?.onboarded_at) return <Redirect href="/(tabs)/feed" />;
 
   return <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#0B0B0F' } }} />;
 }

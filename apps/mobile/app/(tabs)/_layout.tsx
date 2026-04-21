@@ -33,9 +33,9 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="feed"
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon label="Home" focused={focused} />,
+          tabBarIcon: ({ focused }) => <TabIcon label="Feed" focused={focused} />,
         }}
       />
       <Tabs.Screen
