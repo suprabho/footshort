@@ -104,7 +104,17 @@ export default function StoryScreen() {
           transition={150}
         />
       ) : null}
-      <View style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.45)' }} />
+      <View style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.3)' }} />
+      {/* Faux gradient scrim behind bottom text for legibility */}
+      <View
+        pointerEvents="none"
+        style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '55%' }}
+      >
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.0)' }} />
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.35)' }} />
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.65)' }} />
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.85)' }} />
+      </View>
 
       <View style={{ paddingTop: insets.top + 8, paddingHorizontal: 8 }}>
         <View style={{ flexDirection: 'row', gap: 4 }}>
