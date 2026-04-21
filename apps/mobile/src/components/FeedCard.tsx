@@ -43,11 +43,7 @@ export function FeedCard({ headline, summary, imageUrl, publisher, url, publishe
         )}
       </View>
 
-      {/* Content: flex-1 expands; pb accounts for safe area so last line never clips */}
-      <View
-        className="flex-1 px-6 pt-5"
-        style={{ paddingBottom: insets.bottom + 20 }}
-      >
+      <View className="flex-1 px-6 pt-5" style={{ paddingBottom: insets.bottom + 16 }}>
         <View className="flex-row items-center mb-3">
           <View className="bg-surface border border-border rounded-full px-3 py-1">
             <Text className="text-text text-xs font-medium">{publisher}</Text>
