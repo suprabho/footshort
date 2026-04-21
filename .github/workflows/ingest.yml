@@ -2,8 +2,8 @@ name: ingest
 
 on:
   schedule:
-    # Every 30 minutes. GH cron is UTC and can drift up to ~15 min under load.
-    - cron: '*/30 * * * *'
+    # Every hour on the hour. GH cron is UTC and can drift up to ~15 min under load.
+    - cron: '0 * * * *'
   workflow_dispatch: {}
 
 concurrency:
