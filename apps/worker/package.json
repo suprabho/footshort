@@ -1,0 +1,23 @@
+{
+  "name": "@shortfoot/worker",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "seed": "tsx --env-file=.env src/seed.ts",
+    "ingest": "tsx --env-file=.env src/ingest.ts",
+    "backfill:images": "tsx --env-file=.env src/backfillImages.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "@shortfoot/shared": "*",
+    "@supabase/supabase-js": "^2.45.4",
+    "rss-parser": "^3.13.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.10",
+    "dotenv": "^16.4.5",
+    "tsx": "^4.19.1"
+  }
+}
