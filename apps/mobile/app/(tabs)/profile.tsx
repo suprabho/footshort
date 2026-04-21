@@ -27,6 +27,14 @@ export default function ProfileScreen() {
       </Pressable>
 
       <Pressable
+        onPress={() => router.push('/admin')}
+        className="flex-row items-center justify-between bg-surface border border-border rounded-lg px-4 py-3 mb-3"
+      >
+        <Text className="text-text font-medium">Pipeline stats</Text>
+        <Text className="text-muted text-sm">→</Text>
+      </Pressable>
+
+      <Pressable
         onPress={signOut}
         className="bg-surface border border-border rounded-lg py-3 items-center mt-4"
       >
