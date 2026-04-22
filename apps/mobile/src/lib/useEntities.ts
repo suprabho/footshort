@@ -8,6 +8,7 @@ export type Entity = {
   name: string;
   country: string | null;
   league_slug: string | null;
+  team_slug: string | null;
   crest_url: string | null;
 };
 
@@ -17,7 +18,7 @@ export function useLeagues() {
     queryFn: async (): Promise<Entity[]> => {
       const { data, error } = await supabase
         .from('entities')
-        .select('id, type, slug, name, country, league_slug, crest_url')
+        .select('id, type, slug, name, country, league_slug, team_slug, crest_url')
         .eq('type', 'league')
         .order('name');
       if (error) throw error;
@@ -34,7 +35,7 @@ export function useTeams(leagueSlugs: string[] | null) {
     queryFn: async (): Promise<Entity[]> => {
       let q = supabase
         .from('entities')
-        .select('id, type, slug, name, country, league_slug, crest_url')
+        .select('id, type, slug, name, country, league_slug, team_slug, crest_url')
         .eq('type', 'team')
         .order('name');
       if (leagueSlugs && leagueSlugs.length > 0) q = q.in('league_slug', leagueSlugs);
