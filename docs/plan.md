@@ -111,9 +111,10 @@ npx expo start --android
 ## Phase 3 — Live layer (week 5)
 
 - Integrate football-data.org fixtures endpoint
-- `MatchWidget` inside cards shows live score / kickoff time
+- `MatchWidget` inside cards shows kickoff time + final score for finished fixtures (live scores deferred to Phase 5)
+- Past-match recap: pull finished-fixture stats (lineups, goals, cards, xG where available) → Gemini summary into a short narrative. Cache one recap per fixture in `match_recaps` to keep token cost bounded.
 - `/league/[slug]` standings screen
-- `/team/[slug]` team page (next match + recent news)
+- `/team/[slug]` team page (next match + recent news + last 5 recaps)
 - `/player/[slug]` player page (team + recent news)
 
 ## Phase 4 — Retention (week 6+)
@@ -121,7 +122,31 @@ npx expo start --android
 - Expo Notifications for breaking news on followed entities
 - Daily digest push at user's chosen time
 - "Top stories today" curated list (manual curation or score-based: engagement + recency)
+- **Today view — topic digest stacks:** for each followed topic (league/team/player), a 5–6 card stack summarizing the day. Requires the Phase 1 clustering pass to exist; one Gemini call per cluster → digest card. Shown as a dismissable daily surface on the feed tab.
 - Deferred: monetization decision (ads vs freemium)
+
+## Phase 5 — Intelligence & interaction (post-launch)
+
+Gated behind real usage data — don't build until Phases 2–4 have users.
+
+- **Live scores:** integrate real-time fixture state into `MatchWidget`. Poll football-data every ~60s while a followed fixture is live; back off to 10 min otherwise. Revisit api-football's push stream if polling hits rate caps.
+- **Ask-anything chat:** single input on the home tab that routes questions across three backends:
+  1. Structured football data (stats, fixtures, standings) — deterministic SQL/function calls.
+  2. User's own feed corpus (semantic search over ingested articles via the same embeddings Phase 1 produces).
+  3. Open Gemini call for general football Q&A as the fallback.
+  Router is a small tool-calling prompt that picks (1)/(2)/(3) per turn.
+- **Generative UI responses:** instead of plain chat bubbles, render structured tool outputs as real components — fixture cards, standings tables, player comparison widgets, mini article stacks. Prototype with a constrained JSON schema ("ui blocks") before pulling in a full OpenUI-style runtime.
+- **Cost/latency guardrails:** per-user daily token caps, aggressive caching of identical questions, and a "fixed corpus" eval harness so we can measure answer quality before scaling spend.
+- **Feedback loop:** dislikes + chat follow-ups feed the same personalization signal used by swipe-left, so the ranker keeps improving.
+
+## Backlog (unscheduled)
+
+Ideas captured but not on any phase. Pull into a phase when there's a reason to.
+
+- **Swipe-driven personalization:** wire up the swipe gestures from Phase 2's `SwiperContainer`.
+  - Left = not interested → write to `article_dislikes (user_id, article_id)` + downrank the article's entities in the ranker.
+  - Right = show more → query nearest neighbors from the headline embeddings (shared with clustering), insert the top related card after the current one.
+  - Depends on: Phase 1 clustering/embeddings, and a ranker worth feeding (likely post-Phase 4).
 
 ## Risks & mitigations
 
