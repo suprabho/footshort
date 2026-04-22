@@ -1,4 +1,5 @@
-import { FlatList, useWindowDimensions, View } from 'react-native';
+import { useRef } from 'react';
+import { FlatList, useWindowDimensions, View, type ViewToken } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { FeedCard as FeedCardType } from '@shortfoot/shared/schemas';
 import { FeedCard } from './FeedCard';
@@ -7,14 +8,33 @@ type Props = {
   items: FeedCardType[];
   onEndReached?: () => void;
   ListFooterComponent?: React.ReactElement;
+  topGap?: number;
+  onItemSeen?: (articleId: string) => void;
 };
 
-export function CardSwiper({ items, onEndReached, ListFooterComponent }: Props) {
+export function CardSwiper({ items, onEndReached, ListFooterComponent, topGap: topGapOverride, onItemSeen }: Props) {
   const { height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const cardHeight = height;
-  // Header pill tabs sit at insets.top + 8 with ~36px height; leave room below them.
-  const topGap = insets.top + 56;
+  const topGap = topGapOverride ?? insets.top + 56;
+
+  // FlatList requires stable refs for viewability config + callback.
+  const onItemSeenRef = useRef(onItemSeen);
+  onItemSeenRef.current = onItemSeen;
+
+  const viewabilityPairs = useRef([
+    {
+      viewabilityConfig: { itemVisiblePercentThreshold: 80, minimumViewTime: 1000 },
+      onViewableItemsChanged: ({ viewableItems }: { viewableItems: ViewToken[] }) => {
+        const cb = onItemSeenRef.current;
+        if (!cb) return;
+        for (const v of viewableItems) {
+          const id = (v.item as FeedCardType | undefined)?.article_id;
+          if (id) cb(id);
+        }
+      },
+    },
+  ]);
 
   return (
     <FlatList
@@ -41,6 +61,7 @@ export function CardSwiper({ items, onEndReached, ListFooterComponent }: Props) 
       onEndReached={onEndReached}
       onEndReachedThreshold={0.5}
       ListFooterComponent={ListFooterComponent}
+      viewabilityConfigCallbackPairs={viewabilityPairs.current}
     />
   );
 }

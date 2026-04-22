@@ -122,6 +122,7 @@ npx expo start --android
 - Expo Notifications for breaking news on followed entities
 - Daily digest push at user's chosen time
 - "Top stories today" curated list (manual curation or score-based: engagement + recency)
+- **User analytics** — per-user Profile tab stats: articles read this week, top teams by reads, most-read league, reading streak. Requires a `reads` events table (log card impression/open to source) before this is meaningful.
 - **Today view — topic digest stacks:** for each followed topic (league/team/player), a 5–6 card stack summarizing the day. Requires the Phase 1 clustering pass to exist; one Gemini call per cluster → digest card. Shown as a dismissable daily surface on the feed tab.
 - Deferred: monetization decision (ads vs freemium)
 
