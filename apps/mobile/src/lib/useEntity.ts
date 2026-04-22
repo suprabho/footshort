@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from './supabase';
 import type { Entity } from './useEntities';
 
-const ENTITY_COLS = 'id, type, slug, name, country, league_slug, team_slug, crest_url';
+const ENTITY_COLS = 'id, type, slug, name, country, league_slug, team_slug, crest_url, primary_color';
 
 export function useEntity(type: 'league' | 'team' | 'player', slug: string | undefined) {
   return useQuery({

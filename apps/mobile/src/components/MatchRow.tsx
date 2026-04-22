@@ -65,7 +65,7 @@ export function MatchRow({ fixture }: Props) {
       : 'vs';
 
   return (
-    <View className="flex-row items-center bg-surface border border-border rounded-xl px-3 py-3 mb-2">
+    <View className="flex-row items-center p-2 border-b-2 border-white/30">
       <TeamCell
         name={homeName}
         crest={fixture.home?.crest_url ?? null}
@@ -73,10 +73,10 @@ export function MatchRow({ fixture }: Props) {
         align="left"
       />
       <View className="px-3 items-center min-w-[72px]">
-        <Text className={isFinished ? 'text-text text-sm font-semibold' : 'text-muted text-xs'}>
+        <Text className={isFinished ? 'text-text text-sm font-semibold' : 'text-text/80 text-xs'}>
           {scoreText}
         </Text>
-        <Text className="text-muted text-[10px] mt-0.5">
+        <Text className="text-text/50 text-[10px] mt-0.5">
           {kickoffLabel(fixture.kickoff_at, fixture.status)}
         </Text>
       </View>

@@ -3,11 +3,12 @@ import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/lib/AuthProvider';
-import { useDiscoverFeed, useFeed } from '@/lib/useFeed';
+import { useDiscoverFeed } from '@/lib/useFeed';
 import { useFollowedStories } from '@/lib/useFollowedStories';
 import { useSeenArticles } from '@/lib/useSeenArticles';
 import { CardSwiper } from '@/components/CardSwiper';
 import { StoryRings } from '@/components/StoryRings';
+import { ForYouMatchFeed } from '@/components/ForYouMatchFeed';
 
 type Tab = 'discover' | 'forYou';
 
@@ -17,8 +18,8 @@ function PillTabs({ active, onChange }: { active: Tab; onChange: (t: Tab) => voi
   return (
     <View className="flex-row bg-surface/60 rounded-full p-1 border border-border">
       {([
-        { key: 'discover', label: 'Discover' },
         { key: 'forYou', label: 'For you' },
+        { key: 'discover', label: 'Discover' },
       ] as const).map((t) => {
         const selected = active === t.key;
         return (
@@ -54,16 +55,43 @@ function ProfileButton() {
 
 function FeedBody({ tab }: { tab: Tab }) {
   const insets = useSafeAreaInsets();
-  const forYou = useFeed();
   const discover = useDiscoverFeed();
   const stories = useFollowedStories();
   const { seen, markSeen } = useSeenArticles();
-  const active = tab === 'forYou' ? forYou : discover;
 
   const showRings = tab === 'forYou' && (stories.data?.length ?? 0) > 0;
   const topGap = insets.top + 56 + (showRings ? RINGS_HEIGHT : 0);
 
-  if (active.isLoading) {
+  if (tab === 'forYou') {
+    const overlayHeight = insets.top + 56 + (showRings ? RINGS_HEIGHT : 0);
+    return (
+      <>
+        <ForYouMatchFeed topGap={topGap} bottomGap={insets.bottom + 24} />
+        <View
+          pointerEvents="none"
+          className="backdrop-blur-xl"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: overlayHeight,
+            backgroundColor: 'rgba(11,11,15,0.55)',
+          }}
+        />
+        {showRings ? (
+          <View
+            pointerEvents="box-none"
+            style={{ position: 'absolute', left: 0, right: 0, top: insets.top + 56, height: RINGS_HEIGHT }}
+          >
+            <StoryRings groups={stories.data!} seen={seen} />
+          </View>
+        ) : null}
+      </>
+    );
+  }
+
+  if (discover.isLoading) {
     return (
       <View className="flex-1 items-center justify-center">
         <ActivityIndicator color="#00D26A" />
@@ -71,49 +99,35 @@ function FeedBody({ tab }: { tab: Tab }) {
     );
   }
 
-  if (active.error) {
+  if (discover.error) {
     return (
       <View className="flex-1 items-center justify-center px-6">
         <Text className="text-text text-lg mb-2">Could not load</Text>
-        <Text className="text-muted text-sm text-center">{(active.error as Error).message}</Text>
+        <Text className="text-muted text-sm text-center">{(discover.error as Error).message}</Text>
       </View>
     );
   }
 
-  const items = active.data?.pages.flatMap((p) => p.items) ?? [];
+  const items = discover.data?.pages.flatMap((p) => p.items) ?? [];
 
-  if (items.length === 0 && !showRings) {
+  if (items.length === 0) {
     return (
       <View className="flex-1 items-center justify-center px-6">
         <Text className="text-text text-lg mb-2">Nothing here yet</Text>
-        <Text className="text-muted text-sm text-center">
-          {tab === 'forYou'
-            ? 'No articles match what you follow. Add more or check back later.'
-            : 'No recent stories yet. Check back soon.'}
-        </Text>
+        <Text className="text-muted text-sm text-center">No recent stories yet. Check back soon.</Text>
       </View>
     );
   }
 
   return (
-    <>
-      <CardSwiper
-        items={items}
-        topGap={topGap}
-        onItemSeen={markSeen}
-        onEndReached={() => {
-          if (active.hasNextPage && !active.isFetchingNextPage) active.fetchNextPage();
-        }}
-      />
-      {showRings ? (
-        <View
-          pointerEvents="box-none"
-          style={{ position: 'absolute', left: 0, right: 0, top: insets.top + 56, height: RINGS_HEIGHT }}
-        >
-          <StoryRings groups={stories.data!} seen={seen} />
-        </View>
-      ) : null}
-    </>
+    <CardSwiper
+      items={items}
+      topGap={insets.top + 56}
+      onItemSeen={markSeen}
+      onEndReached={() => {
+        if (discover.hasNextPage && !discover.isFetchingNextPage) discover.fetchNextPage();
+      }}
+    />
   );
 }
 
@@ -131,9 +145,10 @@ export default function Home() {
         className="absolute left-0 right-0 flex-row items-center justify-between px-4"
         style={{ top: insets.top + 8 }}
       >
-        <ProfileButton />
+        
         <PillTabs active={tab} onChange={setTab} />
         <View className="w-10" />
+        <ProfileButton />
       </View>
     </View>
   );

@@ -178,7 +178,7 @@ export default function StoryScreen() {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#000' }}>
+    <View className="flex flex-col flex-1 justify-between bg-black">
       {story.image_url ? (
         <Image
           source={{ uri: story.image_url }}
@@ -188,18 +188,19 @@ export default function StoryScreen() {
         />
       ) : null}
       <View style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.3)' }} />
-      {/* Faux gradient scrim behind bottom text for legibility */}
-      <View
-        pointerEvents="none"
-        style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '55%' }}
-      >
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.0)' }} />
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.35)' }} />
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.65)' }} />
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.85)' }} />
-      </View>
 
-      <View style={{ paddingTop: insets.top + 8, paddingHorizontal: 8 }}>
+      <Pressable
+        onPressIn={pauseProgress}
+        onPressOut={() => resumeProgress(goPrev)}
+        style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '33%' }}
+      />
+      <Pressable
+        onPressIn={pauseProgress}
+        onPressOut={() => resumeProgress(goNext)}
+        style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '67%' }}
+      />
+
+      <View className="flex flex-col" style={{ paddingTop: insets.top + 8, paddingHorizontal: 8 }}>
         <View style={{ flexDirection: 'row', gap: 4 }}>
           {group.items.map((_, i) => (
             <ProgressBar key={i} state={i < storyIdx ? 'done' : i === storyIdx ? 'active' : 'pending'} progress={progress} />
@@ -207,9 +208,7 @@ export default function StoryScreen() {
         </View>
 
         <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12, paddingHorizontal: 4 }}>
-          <View
-            style={{ width: 28, height: 28, borderRadius: 14, overflow: 'hidden', backgroundColor: '#1a1a20' }}
-          >
+          <View className="w-7 h-7 rounded-full overflow-hiddle bg-white">
             {group.entity.crest_url ? (
               <Image
                 source={{ uri: group.entity.crest_url }}
@@ -222,13 +221,13 @@ export default function StoryScreen() {
             {group.entity.name}
           </Text>
           <Text className="text-text/70 text-xs ml-2">{relativeTime(story.published_at)}</Text>
-          <Pressable onPress={close} hitSlop={12} className="ml-3">
+          <Pressable onPress={close} hitSlop={12} className="z-10 ml-3">
             <Text className="text-text text-xl">✕</Text>
           </Pressable>
         </View>
       </View>
 
-      <View style={{ flex: 1, justifyContent: 'flex-end', paddingHorizontal: 20, paddingBottom: insets.bottom + 120 }}>
+      <View className="flex m-2 rounded-xl bg-surface/20 backdrop-blur-xl flex-end px-4 pt-8 pb-10 mb-safe-offset-1">
         <View className="bg-surface/80 self-start rounded-full px-3 py-1 mb-3 border border-border">
           <Text className="text-text text-xs font-medium">{story.publisher}</Text>
         </View>
@@ -246,17 +245,6 @@ export default function StoryScreen() {
           <Text className="text-accent text-sm font-medium">Read at source →</Text>
         </Pressable>
       </View>
-
-      <Pressable
-        onPressIn={pauseProgress}
-        onPressOut={() => resumeProgress(goPrev)}
-        style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '33%' }}
-      />
-      <Pressable
-        onPressIn={pauseProgress}
-        onPressOut={() => resumeProgress(goNext)}
-        style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '67%' }}
-      />
     </View>
   );
 }
