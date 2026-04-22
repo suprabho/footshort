@@ -14,6 +14,10 @@ const config: ExpoConfig = {
   updates: {
     url: 'https://u.expo.dev/718ceb3c-a4cc-4180-867f-813e1be1d476',
   },
+  ios: {
+    bundleIdentifier: 'app.shortfoot',
+    buildNumber: '1',
+  },
   android: {
     package: 'app.shortfoot',
     versionCode: 1,
