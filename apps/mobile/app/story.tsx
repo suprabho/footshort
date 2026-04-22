@@ -136,6 +136,28 @@ export default function StoryScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [entityIdx, storyIdx, story?.article_id]);
 
+  // Press-and-hold to pause the countdown. Taps shorter than HOLD_THRESHOLD_MS
+  // still navigate; anything longer is treated as a hold and suppresses nav.
+  const HOLD_THRESHOLD_MS = 180;
+  const pressStartRef = useRef<number>(0);
+
+  const pauseProgress = () => {
+    pressStartRef.current = Date.now();
+    cancelAnimation(progress);
+  };
+
+  const resumeProgress = (onTap: () => void) => {
+    const held = Date.now() - pressStartRef.current;
+    if (held < HOLD_THRESHOLD_MS) {
+      onTap();
+      return;
+    }
+    const remaining = Math.max(0, STORY_DURATION_MS * (1 - progress.value));
+    progress.value = withTiming(1, { duration: remaining }, (finished) => {
+      if (finished) runOnJS(goNext)();
+    });
+  };
+
   if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center" style={{ backgroundColor: '#000' }}>
@@ -226,11 +248,13 @@ export default function StoryScreen() {
       </View>
 
       <Pressable
-        onPress={goPrev}
+        onPressIn={pauseProgress}
+        onPressOut={() => resumeProgress(goPrev)}
         style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '33%' }}
       />
       <Pressable
-        onPress={goNext}
+        onPressIn={pauseProgress}
+        onPressOut={() => resumeProgress(goNext)}
         style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '67%' }}
       />
     </View>
