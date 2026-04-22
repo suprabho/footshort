@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -10,7 +10,8 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import { useFollowedStories } from '@/lib/useFollowedStories';
+import { useFollowedStories, type StoryGroup } from '@/lib/useFollowedStories';
+import { useSeenArticles } from '@/lib/useSeenArticles';
 
 const STORY_DURATION_MS = 6000;
 
@@ -28,26 +29,76 @@ export default function StoryScreen() {
   const insets = useSafeAreaInsets();
   const { start } = useLocalSearchParams<{ start?: string }>();
   const { data: groups, isLoading } = useFollowedStories();
+  const { seen, markSeen } = useSeenArticles();
 
   const initial = Math.max(0, Math.min(Number(start) || 0, (groups?.length ?? 1) - 1));
+
+  // Snapshot of the seen set at the moment we enter an entity. Items marked
+  // seen *during* this session don't get auto-skipped. If every item in a
+  // group was already seen on entry, we clear the snapshot to play linearly
+  // (the user explicitly tapped to replay).
+  const snapshotRef = useRef<Set<string>>(new Set());
+  const snapshotEntityRef = useRef<number>(-1);
+
   const [entityIdx, setEntityIdx] = useState(initial);
-  const [storyIdx, setStoryIdx] = useState(0);
+  const [storyIdx, setStoryIdx] = useState<number>(() => {
+    const g = groups?.[initial];
+    if (!g) return 0;
+    const snap = new Set(seen);
+    const first = g.items.findIndex((it) => !snap.has(it.article_id));
+    snapshotRef.current = first < 0 ? new Set() : snap;
+    snapshotEntityRef.current = initial;
+    return first >= 0 ? first : 0;
+  });
   const progress = useSharedValue(0);
 
   const group = groups?.[entityIdx];
   const story = group?.items[storyIdx];
 
+  // Re-snapshot + jump to first unseen whenever we enter a new entity
+  // (also handles the cold-load case where `groups` arrives after mount).
+  useEffect(() => {
+    if (!groups) return;
+    const g = groups[entityIdx];
+    if (!g) return;
+    if (snapshotEntityRef.current === entityIdx) return;
+    snapshotEntityRef.current = entityIdx;
+    const snap = new Set(seen);
+    const first = g.items.findIndex((it) => !snap.has(it.article_id));
+    snapshotRef.current = first < 0 ? new Set() : snap;
+    setStoryIdx(first >= 0 ? first : 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entityIdx, groups]);
+
   const close = () => router.back();
+
+  const nextUnseenIdx = (g: StoryGroup, from: number): number => {
+    const snap = snapshotRef.current;
+    for (let i = from + 1; i < g.items.length; i++) {
+      const it = g.items[i];
+      if (it && !snap.has(it.article_id)) return i;
+    }
+    return -1;
+  };
+
+  const prevUnseenIdx = (g: StoryGroup, from: number): number => {
+    const snap = snapshotRef.current;
+    for (let i = from - 1; i >= 0; i--) {
+      const it = g.items[i];
+      if (it && !snap.has(it.article_id)) return i;
+    }
+    return -1;
+  };
 
   const goNext = () => {
     if (!groups) return;
     const g = groups[entityIdx];
     if (!g) return close();
-    if (storyIdx + 1 < g.items.length) {
-      setStoryIdx(storyIdx + 1);
+    const next = nextUnseenIdx(g, storyIdx);
+    if (next >= 0) {
+      setStoryIdx(next);
     } else if (entityIdx + 1 < groups.length) {
       setEntityIdx(entityIdx + 1);
-      setStoryIdx(0);
     } else {
       close();
     }
@@ -55,18 +106,28 @@ export default function StoryScreen() {
 
   const goPrev = () => {
     if (!groups) return;
-    if (storyIdx > 0) {
-      setStoryIdx(storyIdx - 1);
-    } else if (entityIdx > 0) {
-      const prev = entityIdx - 1;
-      const prevGroup = groups[prev];
-      setEntityIdx(prev);
-      setStoryIdx(prevGroup ? Math.max(0, prevGroup.items.length - 1) : 0);
+    const g = groups[entityIdx];
+    if (!g) return;
+    const prev = prevUnseenIdx(g, storyIdx);
+    if (prev >= 0) {
+      setStoryIdx(prev);
+      return;
+    }
+    if (entityIdx > 0) {
+      const prevI = entityIdx - 1;
+      const prevGroup = groups[prevI];
+      if (!prevGroup) return;
+      // Backward nav = user wants to review; play prev group linearly.
+      snapshotEntityRef.current = prevI;
+      snapshotRef.current = new Set();
+      setEntityIdx(prevI);
+      setStoryIdx(Math.max(0, prevGroup.items.length - 1));
     }
   };
 
   useEffect(() => {
     if (!story) return;
+    markSeen(story.article_id);
     progress.value = 0;
     progress.value = withTiming(1, { duration: STORY_DURATION_MS }, (finished) => {
       if (finished) runOnJS(goNext)();

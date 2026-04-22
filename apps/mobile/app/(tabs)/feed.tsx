@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/lib/AuthProvider';
 import { useDiscoverFeed, useFeed } from '@/lib/useFeed';
 import { useFollowedStories } from '@/lib/useFollowedStories';
+import { useSeenArticles } from '@/lib/useSeenArticles';
 import { CardSwiper } from '@/components/CardSwiper';
 import { StoryRings } from '@/components/StoryRings';
 
@@ -56,6 +57,7 @@ function FeedBody({ tab }: { tab: Tab }) {
   const forYou = useFeed();
   const discover = useDiscoverFeed();
   const stories = useFollowedStories();
+  const { seen, markSeen } = useSeenArticles();
   const active = tab === 'forYou' ? forYou : discover;
 
   const showRings = tab === 'forYou' && (stories.data?.length ?? 0) > 0;
@@ -78,7 +80,7 @@ function FeedBody({ tab }: { tab: Tab }) {
     );
   }
 
-  const items = active.data?.pages.flat() ?? [];
+  const items = active.data?.pages.flatMap((p) => p.items) ?? [];
 
   if (items.length === 0 && !showRings) {
     return (
@@ -98,6 +100,7 @@ function FeedBody({ tab }: { tab: Tab }) {
       <CardSwiper
         items={items}
         topGap={topGap}
+        onItemSeen={markSeen}
         onEndReached={() => {
           if (active.hasNextPage && !active.isFetchingNextPage) active.fetchNextPage();
         }}
@@ -107,7 +110,7 @@ function FeedBody({ tab }: { tab: Tab }) {
           pointerEvents="box-none"
           style={{ position: 'absolute', left: 0, right: 0, top: insets.top + 56, height: RINGS_HEIGHT }}
         >
-          <StoryRings groups={stories.data!} />
+          <StoryRings groups={stories.data!} seen={seen} />
         </View>
       ) : null}
     </>

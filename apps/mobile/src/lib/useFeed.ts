@@ -1,24 +1,38 @@
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from './supabase';
 import { useAuth } from './AuthProvider';
 import type { FeedCard } from '@shortfoot/shared/schemas';
 
 const PAGE_SIZE = 20;
 
+type Page = {
+  items: FeedCard[];
+  // Cursor derived from the raw (pre-filter) last row so pagination stops
+  // only when the DB actually has no more rows, not just because the page
+  // was heavily filtered by the seen-set.
+  cursor: string | null;
+};
+
+function getSeenSet(qc: ReturnType<typeof useQueryClient>, userId: string | null): ReadonlySet<string> {
+  return qc.getQueryData<Set<string>>(['seenArticles', userId]) ?? new Set();
+}
+
 /**
- * Fetch the personalized feed for the current user.
- * Returns cards for entities the user follows, paginated by published_at.
+ * Personalized feed for the current user, filtered against the seen snapshot
+ * at query time. Items marked seen during the session are NOT removed from
+ * already-fetched pages; they only disappear on the next refetch.
  */
 export function useFeed() {
   const { session } = useAuth();
   const userId = session?.user.id ?? null;
+  const qc = useQueryClient();
 
-  return useInfiniteQuery({
+  return useInfiniteQuery<Page>({
     queryKey: ['feed', userId],
     enabled: !!userId,
-    initialPageParam: null as string | null, // cursor = last published_at
+    initialPageParam: null as string | null,
     queryFn: async ({ pageParam }) => {
-      if (!userId) return [] as FeedCard[];
+      if (!userId) return { items: [], cursor: null };
       let query = supabase
         .from('user_feed')
         .select('*')
@@ -26,27 +40,31 @@ export function useFeed() {
         .order('published_at', { ascending: false })
         .limit(PAGE_SIZE);
 
-      if (pageParam) {
-        query = query.lt('published_at', pageParam);
-      }
+      if (pageParam) query = query.lt('published_at', pageParam as string);
 
       const { data, error } = await query;
       if (error) throw error;
-      return (data ?? []) as FeedCard[];
+      const raw = (data ?? []) as FeedCard[];
+
+      const seen = getSeenSet(qc, userId);
+      const items = raw.filter((r) => !seen.has(r.article_id));
+      const cursor =
+        raw.length < PAGE_SIZE ? null : (raw[raw.length - 1]?.published_at ?? null);
+      return { items, cursor };
     },
-    getNextPageParam: (lastPage) => {
-      if (lastPage.length < PAGE_SIZE) return null;
-      return lastPage[lastPage.length - 1]?.published_at ?? null;
-    },
+    getNextPageParam: (lastPage) => lastPage.cursor,
   });
 }
 
 /**
- * Discover feed — for users who haven't followed anything yet (or "Top stories" tab).
- * Returns cluster leads from the last 24h, ordered by recency.
+ * Discover feed — cluster leads from the last 24h, same seen-filter behavior.
  */
 export function useDiscoverFeed() {
-  return useInfiniteQuery({
+  const { session } = useAuth();
+  const userId = session?.user.id ?? null;
+  const qc = useQueryClient();
+
+  return useInfiniteQuery<Page>({
     queryKey: ['feed', 'discover'],
     initialPageParam: null as string | null,
     queryFn: async ({ pageParam }) => {
@@ -59,16 +77,18 @@ export function useDiscoverFeed() {
         .order('published_at', { ascending: false })
         .limit(PAGE_SIZE);
 
-      if (pageParam) query = query.lt('published_at', pageParam);
+      if (pageParam) query = query.lt('published_at', pageParam as string);
 
       const { data, error } = await query;
       if (error) throw error;
-      return (data ?? []).map((r) => ({
-        article_id: r.id,
-        ...r,
-      })) as FeedCard[];
+      const raw = (data ?? []).map((r) => ({ article_id: r.id, ...r })) as FeedCard[];
+
+      const seen = getSeenSet(qc, userId);
+      const items = raw.filter((r) => !seen.has(r.article_id));
+      const cursor =
+        raw.length < PAGE_SIZE ? null : (raw[raw.length - 1]?.published_at ?? null);
+      return { items, cursor };
     },
-    getNextPageParam: (lastPage) =>
-      lastPage.length < PAGE_SIZE ? null : (lastPage[lastPage.length - 1]?.published_at ?? null),
+    getNextPageParam: (lastPage) => lastPage.cursor,
   });
 }
