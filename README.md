@@ -45,3 +45,5 @@ RSS feeds → worker (every 10 min) → Gemini (summarize + tag) → Supabase
 
 See `docs/plan.md` for detail.
 # footshort
+
+DUMMY COMMIT

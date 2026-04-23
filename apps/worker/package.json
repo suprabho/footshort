@@ -7,6 +7,7 @@
     "ingest": "tsx --env-file=.env src/ingest.ts",
     "ingest:ci": "tsx src/ingest.ts",
     "backfill:images": "tsx --env-file=.env src/backfillImages.ts",
+    "backfill:colors": "tsx --env-file=.env src/backfillColors.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -14,6 +15,7 @@
     "@shortfoot/shared": "*",
     "@supabase/supabase-js": "^2.45.4",
     "rss-parser": "^3.13.0",
+    "sharp": "^0.34.5",
     "zod": "^3.23.8"
   },
   "devDependencies": {

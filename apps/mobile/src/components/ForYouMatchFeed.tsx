@@ -4,6 +4,7 @@ import {
   Platform,
   Pressable,
   ScrollView,
+  StyleSheet,
   Text,
   Vibration,
   View,
@@ -11,6 +12,7 @@ import {
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from 'react-native';
+import { BlurView } from 'expo-blur';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import Animated, {
@@ -282,15 +284,15 @@ function CardShell({
   return (
     <Animated.View style={shadowStyle as any}>
       <View
-        className="backdrop-blur-2xl"
         style={{
           borderRadius: 22,
           overflow: 'hidden',
-          backgroundColor: palette.base,
           borderWidth: 1,
           borderColor: palette.border,
         }}
       >
+        <BlurView intensity={30} tint="dark" style={StyleSheet.absoluteFill} />
+        <View style={{ ...StyleSheet.absoluteFillObject, backgroundColor: palette.base }} />
         {/* Brand top wash for depth */}
         <View
           pointerEvents="none"
@@ -519,7 +521,11 @@ function LeagueCardContent({
         ) : null}
 
         {section.nextMatchday.length > 0 ? (
-          <View className="mt-4 p-4 bg-white/10 rounded-xl border-white/20 backdrop-blur-2xl">
+          <View
+            className="mt-4 p-4 rounded-xl border-white/20 overflow-hidden"
+          >
+            <BlurView intensity={20} tint="dark" style={StyleSheet.absoluteFill} />
+            <View style={{ ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(255,255,255,0.08)' }} />
             <SectionLabel
               text={
                 section.nextMatchdayNumber != null
