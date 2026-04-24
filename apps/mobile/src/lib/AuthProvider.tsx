@@ -37,16 +37,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data }) => {
-      setSession(data.session);
-      if (data.session) await loadProfile(data.session.user.id);
-      setLoading(false);
-    });
+    async function handleProfileFailure(e: unknown) {
+      console.warn('loadProfile failed, signing out', e);
+      try {
+        await supabase.auth.signOut();
+      } catch (signOutErr) {
+        console.warn('signOut after profile failure also failed', signOutErr);
+        setSession(null);
+        setProfile(null);
+      }
+    }
 
-    const { data: sub } = supabase.auth.onAuthStateChange(async (_event, s) => {
+    supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        setSession(data.session);
+        if (data.session) loadProfile(data.session.user.id).catch(handleProfileFailure);
+      })
+      .catch((e) => console.warn('getSession failed', e))
+      .finally(() => setLoading(false));
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s);
       if (s) {
-        await loadProfile(s.user.id);
+        loadProfile(s.user.id).catch(handleProfileFailure);
       } else {
         setProfile(null);
       }
