@@ -6,6 +6,8 @@
     "seed": "tsx --env-file=.env src/seed.ts",
     "ingest": "tsx --env-file=.env src/ingest.ts",
     "ingest:ci": "tsx src/ingest.ts",
+    "scores": "tsx --env-file=.env src/scores.ts",
+    "scores:ci": "tsx src/scores.ts",
     "backfill:images": "tsx --env-file=.env src/backfillImages.ts",
     "typecheck": "tsc --noEmit"
   },
