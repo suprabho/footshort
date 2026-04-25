@@ -111,6 +111,7 @@ export function useFollowedFixtures() {
             .from('fixtures')
             .select(FIXTURE_COLS)
             .or(`home_team_id.eq.${team.id},away_team_id.eq.${team.id}`)
+            .eq('status', 'finished')
             .lt('kickoff_at', now)
             .order('kickoff_at', { ascending: false })
             .limit(5),
