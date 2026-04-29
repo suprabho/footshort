@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { BlurView } from 'expo-blur';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -227,7 +228,14 @@ export default function StoryScreen() {
         </View>
       </View>
 
-      <View className="flex m-2 rounded-xl bg-surface/20 backdrop-blur-xl flex-end px-4 pt-8 pb-10 mb-safe-offset-1">
+      <View className="flex m-2 rounded-xl flex-end px-4 pt-8 pb-10 mb-safe-offset-1 overflow-hidden">
+        <BlurView
+          intensity={50}
+          tint="dark"
+          experimentalBlurMethod="dimezisBlurView"
+          style={StyleSheet.absoluteFill}
+        />
+        <View style={{ ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(22,22,29,0.35)' }} />
         <View className="bg-surface/80 self-start rounded-full px-3 py-1 mb-3 border border-border">
           <Text className="text-text text-xs font-medium">{story.publisher}</Text>
         </View>

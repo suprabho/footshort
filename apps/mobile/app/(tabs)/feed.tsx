@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/lib/AuthProvider';
@@ -69,16 +70,23 @@ function FeedBody({ tab }: { tab: Tab }) {
         <ForYouMatchFeed topGap={topGap} bottomGap={insets.bottom + 24} />
         <View
           pointerEvents="none"
-          className="backdrop-blur-xl"
           style={{
             position: 'absolute',
             top: 0,
             left: 0,
             right: 0,
             height: overlayHeight,
-            backgroundColor: 'rgba(11,11,15,0.55)',
+            overflow: 'hidden',
           }}
-        />
+        >
+          <BlurView
+            intensity={40}
+            tint="dark"
+            experimentalBlurMethod="dimezisBlurView"
+            style={StyleSheet.absoluteFill}
+          />
+          <View style={{ ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(11,11,15,0.35)' }} />
+        </View>
         {showRings ? (
           <View
             pointerEvents="box-none"
