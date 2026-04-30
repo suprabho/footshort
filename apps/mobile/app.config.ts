@@ -16,7 +16,7 @@ const config: ExpoConfig = {
   },
   ios: {
     bundleIdentifier: 'app.shortfoot',
-    buildNumber: '1',
+    buildNumber: '2',
   },
   android: {
     package: 'app.shortfoot',
@@ -25,6 +25,15 @@ const config: ExpoConfig = {
       backgroundColor: '#0B0B0F',
     },
   },
+  plugins: [
+    [
+      'expo-build-properties',
+      {
+        ios: { newArchEnabled: true },
+        android: { newArchEnabled: true },
+      },
+    ],
+  ],
   extra: {
     eas: {
       projectId: '718ceb3c-a4cc-4180-867f-813e1be1d476',
