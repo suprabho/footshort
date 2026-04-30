@@ -22,6 +22,9 @@ export default function ProfileScreen() {
 
   return (
     <View className="flex-1 bg-bg px-6" style={{ paddingTop: insets.top + 24 }}>
+      <Pressable onPress={() => router.back()} hitSlop={8} className="mb-4">
+        <Text className="text-text text-base">←</Text>
+      </Pressable>
       <Text className="text-text text-2xl font-bold mb-1">Profile</Text>
       <Text className="text-muted text-sm mb-8">{email ?? 'Not signed in'}</Text>
 
