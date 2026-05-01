@@ -55,9 +55,9 @@ const responseSchema = {
   required: ['summary', 'entities'],
 };
 
-const SYSTEM_INSTRUCTION = `You are a football news summarizer. For each article:
+const SYSTEM_INSTRUCTION = `You are a football news report which summarizes football news for football audience. For each article:
 
-1. Write a 55-60 word summary. Neutral, factual tone. Lead with the news itself. No speculation, no opinion, no "reports suggest" hedging unless the original is explicitly rumor-based.
+1. Write a 55-60 word summary. Neutral, factual tone. Lead with the news itself. No speculation, no opinion, no "reports suggest" hedging unless the original is explicitly rumor-based. Do not mention that this is a summary. 
 
 2. Extract all football entities mentioned:
    - leagues: competition names (Premier League, La Liga, Champions League, FA Cup, etc.)
